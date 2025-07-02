@@ -7,6 +7,18 @@ const SendIcon = () => (
   </svg>
 );
 
+const ChevronUpIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+    <path fillRule="evenodd" d="M11.47 7.72a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 1 1-1.06 1.06L12 9.31l-6.97 6.97a.75.75 0 0 1-1.06-1.06l7.5-7.5Z" clipRule="evenodd" />
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+    <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
+  </svg>
+);
+
 const Icon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 2.75C11.5858 2.75 11.25 3.08579 11.25 3.5V6.01256C11.25 6.42677 11.5858 6.76256 12 6.76256C12.4142 6.76256 12.75 6.42677 12.75 6.01256V3.5C12.75 3.08579 12.4142 2.75 12 2.75Z" fill="#F0F0F0"/>
@@ -20,15 +32,14 @@ const Icon = () => (
   </svg>
 );
 
-
 function App() {
   const [apiKey, setApiKey] = useState('');
   const [file, setFile] = useState(null);
   const [messages, setMessages] = useState([]);
   const [currentQuery, setCurrentQuery] = useState('');
-  
   const [isLoading, setIsLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [showSetup, setShowSetup] = useState(true);
   
   const chatWindowRef = useRef(null);
 
@@ -37,7 +48,6 @@ function App() {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
   }, [messages]);
-
 
   const handleUpload = async () => {
     if (!file || !apiKey) {
@@ -68,7 +78,6 @@ function App() {
     }
   };
 
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!currentQuery.trim() || !isReady) return;
@@ -83,39 +92,72 @@ function App() {
         question: currentQuery,
       });
       const assistantMessage = { role: 'assistant', content: response.data.answer };
-      setMessages(prev => [...prev, userMessage, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message;
       const assistantErrorMessage = { role: 'assistant', content: `Erro ao buscar resposta: ${errorMessage}` };
-      setMessages(prev => [...prev, userMessage, assistantErrorMessage]);
+      setMessages(prev => [...prev, assistantErrorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
+  const toggleSetup = () => {
+    setShowSetup(!showSetup);
+  };
+
+ return (
     <div className="app-container">
       <div className="header">
         <h2>Converse com seu PDF</h2>
       </div>
       
-      <div className="setup-section">
-        <input
-          type="password"
-          placeholder="Cole sua Chave de API do Google AI aqui"
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-        />
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={(e) => setFile(e.target.files[0])}
-        />
-        <button onClick={handleUpload} disabled={isLoading || !file || !apiKey}>
-          {isLoading && !isReady ? 'Processando...' : 'Fazer Upload e Processar'}
-        </button>
-      </div>
+      <div className="setup-section-container">
+        {showSetup && (
+          <div className="setup-section">
+            <input
+              type="password"
+              placeholder="Cole sua Chave de API do Google AI"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+            />
+            
+            <div style={{width: '100%'}}>
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+              {file && (
+                <div className="file-info">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A.75.75 0 0 0 21 12a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 0 0-1.5h-.75a.75.75 0 0 1-.75-.75V5.625c0-1.036-.84-1.875-1.875-1.875H16.5a.75.75 0 0 0-1.5 0H5.625ZM3 6a3 3 0 0 1 3-3h1.5v10.5H3V6ZM14.25 3A1.5 1.5 0 0 0 12.75 4.5h6a1.5 1.5 0 0 0-1.5-1.5h-3ZM6 13.5v6a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-6H6Z" clipRule="evenodd" />
+                  </svg>
+                  {file.name}
+                </div>
+              )}
+            </div>
 
+            <button onClick={handleUpload} disabled={isLoading || !file || !apiKey}>
+              {isLoading && !isReady ? (
+                <>
+                  <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                  Processando...
+                </>
+              ) : (
+                'Processar PDF'
+              )}
+            </button>
+          </div>
+        )}
+        
+        <div className="setup-toggle" onClick={toggleSetup}>
+          {showSetup ? <ChevronUpIcon /> : <ChevronDownIcon />}
+        </div>
+      </div>
+      
       <div className="chat-window" ref={chatWindowRef}>
         {messages.map((msg, index) => (
           <div key={index} className={`message-container ${msg.role}`}>
