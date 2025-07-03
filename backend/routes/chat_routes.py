@@ -1,3 +1,4 @@
+# routes/chat_routes.py (VERSÃO FINAL COM CORREÇÃO DE LÓGICA DE SUMARIZAÇÃO)
 from flask import Blueprint, request, jsonify
 from services import document_service
 from utils import file_helpers
@@ -10,7 +11,7 @@ active_session = {
     "qa_chain": None,
     "summarization_chain": None,
     "router_chain": None,
-    "files_metadata": {},
+    "files_metadata": {}, 
     "vector_store": None
 }
 
@@ -23,6 +24,7 @@ def upload():
     if not api_key: return jsonify({"error": "Chave de API do Google não fornecida"}), 400
 
     original_filename = secure_filename(file.filename)
+
     filepath, error = file_helpers.save_file_with_timestamp(file)
     if error: return jsonify({"error": error}), 400
 
@@ -51,6 +53,7 @@ def upload():
             active_session["router_chain"] = document_service.create_router_chain(api_key)
         
         return jsonify({"message": f"Arquivo '{original_filename}' adicionado ao conhecimento."})
+
     except Exception as e:
         return jsonify({"error": f"Falha ao processar o arquivo: {str(e)}"}), 500
 
@@ -87,23 +90,16 @@ def ask():
         elif "sumarizacao" in destination:
             target_chunks = None
             summarization_target_name = "todos os documentos"
-            query_lower = query.lower()
 
             for original_name in active_session["files_metadata"].keys():
-                base_name, _ = os.path.splitext(original_name)
-                keywords = base_name.lower().split()
-
-                for keyword in keywords:
-                    if len(keyword) > 2 and keyword in query_lower:
-                        target_chunks = active_session["files_metadata"][original_name]['chunks']
-                        summarization_target_name = original_name
-                        print(f"Match encontrado! Palavra-chave: '{keyword}'. Resumindo o documento: {original_name}")
-                        break
-                if target_chunks is not None:
-                    break
-
+                if original_name.lower() in query.lower():
+                    target_chunks = active_session["files_metadata"][original_name]['chunks']
+                    summarization_target_name = original_name
+                    print(f"Resumo solicitado para o documento específico: {original_name}")
+                    break 
+            
             if target_chunks is None:
-                print("Nenhum documento específico mencionado, resumindo todos.")
+                print("Resumo geral solicitado para todos os documentos.")
                 all_chunks = [chunk for data in active_session["files_metadata"].values() for chunk in data['chunks']]
                 target_chunks = all_chunks
 
