@@ -1,3 +1,4 @@
+# routes/chat_routes.py (COM SUMARIZAÇÃO ESPECÍFICA)
 from flask import Blueprint, request, jsonify
 from services import document_service
 from utils import file_helpers
@@ -9,14 +10,13 @@ active_session = {
     "qa_chain": None,
     "summarization_chain": None,
     "router_chain": None,
-    "document_chunks": [],
+    "documents": {}, 
     "vector_store": None
 }
 
 @chat_bp.route('/upload', methods=['POST'])
 def upload():
     global active_session
-
     if 'file' not in request.files: return jsonify({"error": "Nenhum arquivo enviado"}), 400
     file = request.files['file']
     api_key = request.form.get('apiKey')
@@ -31,25 +31,23 @@ def upload():
         text_splitter = document_service.RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
         new_chunks = text_splitter.split_documents(documents)
         
-        active_session["document_chunks"].extend(new_chunks)
+        filename = os.path.basename(filepath)
+        active_session["documents"][filename] = new_chunks
         
         embeddings = document_service.GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
 
         if active_session.get("vector_store") is None:
-            print("Criando novo Vector Store...")
             vector_store = document_service.FAISS.from_documents(new_chunks, embeddings)
             active_session["vector_store"] = vector_store
         else:
-            print("Adicionando documentos ao Vector Store existente...")
             active_session["vector_store"].add_documents(new_chunks)
 
         active_session["qa_chain"] = document_service.create_qa_chain(active_session["vector_store"], api_key)
         active_session["summarization_chain"] = document_service.create_summarization_chain(api_key)
-
         if not active_session.get("router_chain"):
             active_session["router_chain"] = document_service.create_router_chain(api_key)
         
-        return jsonify({"message": f"Arquivo '{os.path.basename(filepath)}' adicionado ao conhecimento."})
+        return jsonify({"message": f"Arquivo '{filename}' adicionado ao conhecimento."})
 
     except Exception as e:
         return jsonify({"error": f"Falha ao processar o arquivo: {str(e)}"}), 500
@@ -70,7 +68,10 @@ def ask():
         destination = router_result['text'].strip().lower()
         print(f"Intenção detectada: '{destination}'")
         
-        if "pergunta_especifica" in destination:
+        if "fora_do_topico" in destination:
+            return jsonify({"answer": "Desculpe, sou um assistente focado nos documentos que você enviou. Não consigo responder a perguntas sobre outros assuntos.", "sources": []})
+        
+        elif "pergunta_especifica" in destination:
             qa_chain = active_session["qa_chain"]
             response = qa_chain({"question": query})
             sources = []
@@ -82,12 +83,29 @@ def ask():
             return jsonify({"answer": response['answer'], "sources": sources})
         
         elif "sumarizacao" in destination:
-            summarization_chain = active_session["summarization_chain"]
-            response = summarization_chain.invoke(active_session["document_chunks"])
-            return jsonify({"answer": response['output_text'], "sources": []})
+            target_chunks = None
+            summarization_target_name = "todos os documentos"
 
-        elif "fora_do_topico" in destination:
-            return jsonify({"answer": "Desculpe, sou um assistente focado nos documentos que você enviou. Não consigo responder a perguntas sobre outros assuntos.", "sources": []})
+            for doc_name in active_session["documents"].keys():
+                if doc_name.lower() in query.lower():
+                    target_chunks = active_session["documents"][doc_name]
+                    summarization_target_name = doc_name
+                    print(f"Resumo solicitado para o documento específico: {doc_name}")
+                    break 
+            
+            if target_chunks is None:
+                print("Resumo geral solicitado para todos os documentos.")
+                all_chunks = [chunk for chunk_list in active_session["documents"].values() for chunk in chunk_list]
+                target_chunks = all_chunks
+
+            if not target_chunks:
+                 return jsonify({"answer": "Nenhum conteúdo para resumir.", "sources": []})
+
+            summarization_chain = active_session["summarization_chain"]
+            response = summarization_chain.invoke(target_chunks)
+            
+            answer_prefix = f"Aqui está um resumo de '{summarization_target_name}':\n\n"
+            return jsonify({"answer": answer_prefix + response['output_text'], "sources": []})
         
         else:
             print("Roteador indeciso ou resposta inesperada, usando Q&A como padrão.")
