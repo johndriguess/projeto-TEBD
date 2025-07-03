@@ -1,25 +1,21 @@
-/* src/index.css - Tema inspirado no Gemini */
+/* src/index.css - Tema inspirado no Gemini, com novos elementos */
 :root {
-  /* Paleta de Cores */
+  /* ... (nenhuma mudança na paleta de cores) ... */
   --background-color: #131314;
   --panel-color: #1E1F20;
   --input-background: #1E1F20;
   --text-color: #E3E3E3;
   --subtle-text-color: #999;
-  --user-message-bg: #27344F; /* Um azul escuro sutil */
+  --user-message-bg: #27344F;
   --assistant-message-bg: #303134;
-  --accent-color: #89b4fa; /* Destaque para bordas e hovers */
+  --accent-color: #89b4fa;
   --border-color: #444;
-
-  /* Tipografia e Bordas */
   font-family: "Google Sans", Roboto, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: dark;
   color: var(--text-color);
   background-color: var(--background-color);
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -47,118 +43,10 @@ body {
   border-radius: 12px;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden; /* Garante que os cantos arredondados sejam respeitados */
 }
 
-.header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.setup-section {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  background-color: rgba(0,0,0,0.1);
-}
-
-.setup-section {
-  padding: 0.8rem;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  background-color: rgba(0,0,0,0.1);
-  box-sizing: border-box; /* Isso garante que o padding não some à largura total */
-}
-
-.setup-section input {
-  width: 100%; /* Desconta o padding horizontal */
-  padding: 0.5rem 0.8rem;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background-color: var(--input-background);
-  color: var(--text-color);
-  font-size: 0.85rem;
-  transition: all 0.2s ease;
-  box-sizing: border-box; /* Importante para o width calcular corretamente */
-}
-
-.setup-section input[type="file"] {
-  padding: 0.3rem 0.5rem;
-  cursor: pointer;
-}
-
-.setup-section input[type="file"]::file-selector-button {
-  padding: 0.3rem 0.6rem;
-  font-size: 0.75rem;
-  margin-right: 0.6rem;
-}
-
-.setup-section button {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 0.85rem;
-}
-
-.setup-section-container {
-  position: relative;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.setup-toggle {
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 24px;
-  background-color: var(--panel-color);
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-}
-
-.setup-toggle svg {
-  width: 16px;
-  height: 16px;
-  fill: var(--subtle-text-color);
-  transition: all 0.2s;
-}
-
-.setup-toggle:hover svg {
-  fill: var(--accent-color);
-}
-
-.setup-toggle:hover {
-  border-color: var(--accent-color);
-}
-
-.file-info {
-  font-size: 0.75rem;
-  padding: 0 0.2rem; /* Adiciona um pequeno padding para alinhar com o input */
-}
-
-.file-info svg {
-  width: 14px;
-  height: 14px;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-  margin-right: 0.4rem;
-}
+/* REMOVIDO o estilo .header antigo */
 
 .chat-window {
   flex-grow: 1;
@@ -169,7 +57,6 @@ body {
   gap: 1.5rem;
 }
 
-/* Container para a mensagem (avatar + bolha) */
 .message-container {
   display: flex;
   gap: 1rem;
@@ -188,31 +75,30 @@ body {
 }
 
 .user .avatar {
-  background-color: #34A853; /* Verde Google */
+  background-color: #34A853;
   color: white;
 }
 
 .assistant .avatar {
-  background-color: #89b4fa; /* Roxo/Azul do logo Gemini */
+  background-color: #89b4fa;
 }
 
 .message {
   padding: 0.8rem 1.2rem;
   border-radius: 12px;
   line-height: 1.6;
+  text-align: left;
 }
 
-/* Alinhamento do container completo */
 .user {
   align-self: flex-end;
-  flex-direction: row-reverse; /* Inverte a ordem para avatar ficar à direita */
+  flex-direction: row-reverse;
 }
 
 .assistant {
   align-self: flex-start;
 }
 
-/* Cor da bolha da mensagem */
 .user .message {
   background-color: var(--user-message-bg);
 }
@@ -221,12 +107,43 @@ body {
   background-color: var(--assistant-message-bg);
 }
 
+/* NOVO: Estilo para a mensagem de arquivo */
+.file-message-container {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
+.file-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background-color: #2c2d30;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  font-size: 0.85rem;
+  color: var(--subtle-text-color);
+}
+
+.file-message svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--subtle-text-color);
+}
+
+/* --- Área de Input --- */
+
+.input-area {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--panel-color);
+}
+
 .chat-input-form {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-color);
 }
 
 .chat-input-form input {
@@ -244,6 +161,7 @@ body {
 }
 .chat-input-form input:disabled {
   background-color: #333;
+  cursor: not-allowed;
 }
 
 .chat-input-form button {
@@ -268,3 +186,34 @@ body {
   fill: var(--accent-color);
 }
 
+/* NOVO: Estilo para o botão de upload de arquivo */
+.upload-btn-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-btn {
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: all 0.2s;
+}
+.upload-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.main-chat-input-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
