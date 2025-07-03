@@ -56,10 +56,11 @@ def create_summarization_chain(api_key):
 
 ROUTER_TEMPLATE_TEXT = """
 Analise a pergunta do usuário para determinar qual é a sua intenção principal.
-Responda com APENAS UMA das seguintes palavras: 'pergunta_especifica' ou 'sumarizacao'.
+Responda com APENAS UMA das seguintes palavras: 'pergunta_especifica', 'sumarizacao', ou 'fora_do_topico'.
 
-'pergunta_especifica' é a melhor opção para responder perguntas específicas sobre o conteúdo de um documento.
-'sumarizacao' é a melhor opção para criar um resumo, dar uma visão geral ou listar os pontos principais de um documento.
+'pergunta_especifica' é a melhor opção para responder perguntas específicas sobre o conteúdo dos documentos fornecidos.
+'sumarizacao' é a melhor opção para criar um resumo, dar uma visão geral ou listar os pontos principais dos documentos.
+'fora_do_topico' é a melhor opção para perguntas gerais, saudações, ou qualquer coisa que não seja diretamente sobre o conteúdo dos documentos.
 
 << PERGUNTA DO USUÁRIO >>
 {input}
@@ -74,3 +75,4 @@ def create_router_chain(api_key):
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", temperature=0, google_api_key=api_key)
     router_chain = LLMChain(llm=llm, prompt=router_prompt)
     return router_chain
+

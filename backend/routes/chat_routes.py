@@ -1,4 +1,3 @@
-# routes/chat_routes.py (COM SUPORTE A MÚLTIPLOS DOCUMENTOS)
 from flask import Blueprint, request, jsonify
 from services import document_service
 from utils import file_helpers
@@ -86,6 +85,9 @@ def ask():
             summarization_chain = active_session["summarization_chain"]
             response = summarization_chain.invoke(active_session["document_chunks"])
             return jsonify({"answer": response['output_text'], "sources": []})
+
+        elif "fora_do_topico" in destination:
+            return jsonify({"answer": "Desculpe, sou um assistente focado nos documentos que você enviou. Não consigo responder a perguntas sobre outros assuntos.", "sources": []})
         
         else:
             print("Roteador indeciso ou resposta inesperada, usando Q&A como padrão.")
